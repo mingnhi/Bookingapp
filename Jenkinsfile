@@ -4,11 +4,8 @@ pipeline {
     environment {
         REGISTRY = "docker.io/${DOCKER_USERNAME}"
         IMAGE_NAME = "booking-backend"
-        SERVER_HOST = "127.0.0.1"
-        SERVER_USER = "jenkins"
-        SERVER_PORT = "2222"
-        IMAGE_BACKEND = "booking-backend"
-        IMAGE_FRONTEND = "booking-frontend"
+        SERVER_HOST = "188.166.212.126"
+        SERVER_USER = "root"
     }
 
     stages {
@@ -17,7 +14,7 @@ pipeline {
                 checkout([$class: 'GitSCM',
                   branches: [[name: '*/main']],
                   userRemoteConfigs: [[
-                    url: 'https://github.com/mingnhi/deploy_booking_app.git',
+                    url: 'https://github.com/mingnhi/Bookingapp.git',
                     credentialsId: 'github-pat'
                   ]]
                 ])

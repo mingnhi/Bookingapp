@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   backend:
-    image: docker.io/truongminhnhhi/booking-backend:latest
+    build: ./backend
     container_name: booking_backend
     restart: always
     ports:
@@ -15,7 +15,7 @@ services:
       - booking_network
 
   frontend:
-    image: docker.io/truongminhnhhi/booking-frontend:latest
+    build: ./frontend
     container_name: booking_frontend
     restart: always
     ports:
