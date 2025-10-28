@@ -11,7 +11,7 @@ class VehicleService extends ChangeNotifier {
   String? error;
 
   final String baseUrl =
-      'http://127.0.0.1:3000'; // API server URL
+      'http://188.166.212.126:3000'; // API server URL
 
   Future<void> fetchVehicles() async {
     isLoading = true;

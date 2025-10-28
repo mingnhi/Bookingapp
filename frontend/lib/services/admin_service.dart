@@ -5,7 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:dio/dio.dart';
 
 class AdminService extends ChangeNotifier {
-  final String baseUrl = 'http://127.0.0.1:3000';
+  final String baseUrl = 'http://188.166.212.126:3000';
   final _storage = const FlutterSecureStorage();
   bool _isLoading = false;
   String? _error;
