@@ -47,18 +47,29 @@ class AuthService extends ChangeNotifier {
     isLoading = true;
     errorMessage = null;
     notifyListeners();
+
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/auth/login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'email': email, 'password': password}),
       );
+
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = jsonDecode(response.body);
-        await _storage.write(
-            key: 'accessToken',
-            value: data['access_token'] ?? data['accessToken']);
-        await _storage.write(key: 'refreshToken', value: data['refresh_token']);
+        print('Login response: $data'); // Debug
+
+        // Đọc token an toàn cả 2 kiểu key
+        final accessToken = data['access_token'] ?? data['accessToken'];
+        final refreshToken = data['refresh_token'] ?? data['refreshToken'];
+
+        if (accessToken == null || refreshToken == null) {
+          throw Exception('Missing token(s) in login response');
+        }
+
+        await _storage.write(key: 'accessToken', value: accessToken);
+        await _storage.write(key: 'refreshToken', value: refreshToken);
+
         final loginResponse = LoginResponse.fromJson(data);
         currentUser = loginResponse.user;
         notifyListeners();
@@ -68,7 +79,7 @@ class AuthService extends ChangeNotifier {
             'Login failed: ${response.statusCode} - ${response.body}');
       }
     } catch (e) {
-      print('Error logging in: $e');
+      print(' Error logging in: $e');
       errorMessage = e.toString().contains('Login failed')
           ? jsonDecode(e.toString().split(' - ')[1])['message']
           : e.toString();
@@ -78,6 +89,7 @@ class AuthService extends ChangeNotifier {
       notifyListeners();
     }
   }
+
 
   bool isAdmin() {
     return currentUser?.role == 'admin';
@@ -150,6 +162,7 @@ class AuthService extends ChangeNotifier {
     isLoading = true;
     errorMessage = null;
     notifyListeners();
+
     final refreshToken = await _storage.read(key: 'refreshToken');
     if (refreshToken == null) {
       errorMessage = 'No refresh token found';
@@ -157,16 +170,28 @@ class AuthService extends ChangeNotifier {
       notifyListeners();
       return null;
     }
+
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/auth/refresh'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'refreshToken': refreshToken}),
       );
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        await _storage.write(key: 'accessToken', value: data['accessToken']);
-        await _storage.write(key: 'refreshToken', value: data['refresh_token']);
+        print(' Refresh response: $data'); // Debug
+
+        final accessToken = data['access_token'] ?? data['accessToken'];
+        final newRefreshToken = data['refresh_token'] ?? data['refreshToken'];
+
+        if (accessToken == null || newRefreshToken == null) {
+          throw Exception('Missing token(s) in refresh response');
+        }
+
+        await _storage.write(key: 'accessToken', value: accessToken);
+        await _storage.write(key: 'refreshToken', value: newRefreshToken);
+
         final loginResponse = LoginResponse.fromJson(data);
         if (loginResponse.user != null) {
           currentUser = loginResponse.user;
@@ -178,7 +203,7 @@ class AuthService extends ChangeNotifier {
             'Failed to refresh token: ${response.statusCode} - ${response.body}');
       }
     } catch (e) {
-      print('Error refreshing token: $e');
+      print(' Error refreshing token: $e');
       errorMessage = e.toString();
       return null;
     } finally {
@@ -186,6 +211,7 @@ class AuthService extends ChangeNotifier {
       notifyListeners();
     }
   }
+
 
   Future<void> logout() async {
     await _storage.delete(key: 'accessToken');
