@@ -71,10 +71,10 @@ pipeline {
                         file(credentialsId: 'docker-compose-file', variable: 'DOCKER_COMPOSE_PATH')
                     ]) {
                         sh '''
-                            echo "📦 Copying docker-compose file to server..."
+                            echo "Copying docker-compose file to server..."
                             scp -o StrictHostKeyChecking=no $DOCKER_COMPOSE_PATH $SERVER_USER@$SERVER_HOST:~/project/docker-compose.yml
 
-                            echo "🚀 Deploying to production server..."
+                            echo "Deploying to production server..."
                             ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_HOST "
                                 cd ~/project && \
                                 echo \\"DB_CONNECTION_STRING=$DB_CONN\\" > .env && \
