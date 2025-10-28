@@ -78,26 +78,32 @@ pipeline {
         stage('Deploy to Production Server') {
             steps {
                 sshagent (credentials: ['server-ssh-key']) {
-                    sh '''
-                        echo "Creating project folder if missing..."
-                        ssh -o StrictHostKeyChecking=no root@188.166.212.126 "mkdir -p ~/project"
+                    withCredentials([
+                        usernamePassword(credentialsId: 'dockerhub-cred',
+                            usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS'),
+                        string(credentialsId: 'db-conn', variable: 'DB_CONN'),
+                        file(credentialsId: 'docker-compose-file', variable: 'DOCKER_COMPOSE_PATH')
+                    ]) {
+                        sh '''
+                            echo "Copying docker-compose file to production server..."
+                            scp -o StrictHostKeyChecking=no $DOCKER_COMPOSE_PATH $SERVER_USER@$SERVER_HOST:~/project/docker-compose.yml
 
-                        echo "Copying docker-compose file to server..."
-                        scp -o StrictHostKeyChecking=no $DOCKER_COMPOSE_PATH root@188.166.212.126:~/project/docker-compose.yml
-
-                        echo "Deploying new version..."
-                        ssh -o StrictHostKeyChecking=no root@188.166.212.126 "
-                            cd ~/project && \
-                            docker compose --env-file .env pull && \
-                            docker compose --env-file .env down && \
-                            docker compose --env-file .env up -d && \
-                            docker image prune -f
-                        "
-                    '''
+                            echo "Deploying new version on production..."
+                            ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_HOST "
+                                cd ~/project && \
+                                echo \\"DB_CONNECTION_STRING=$DB_CONN\\" > .env && \
+                                echo \\"MONGODB_URI=$DB_CONN\\" >> .env && \
+                                echo \\"$DOCKER_PASS\\" | docker login -u $DOCKER_USER --password-stdin && \
+                                docker compose --env-file .env pull && \
+                                docker compose --env-file .env down && \
+                                docker compose --env-file .env up -d && \
+                                docker image prune -f
+                            "
+                        '''
+                    }
                 }
             }
         }
-
     }
 
     post {
