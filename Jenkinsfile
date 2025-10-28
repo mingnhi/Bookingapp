@@ -48,14 +48,18 @@ pipeline {
                     withCredentials([usernamePassword(credentialsId: 'dockerhub-cred',
                         usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                         sh '''
-                            echo "Building frontend image (Flutter Web)..."
-                            # Pre-cache Flutter SDK để giảm thời gian build
-                            docker build -t docker.io/$DOCKER_USER/booking-frontend:latest .
+                            echo "=== Starting frontend build ==="
+                            free -h
+                            docker system df
+                            docker build --network=host --progress=plain \
+                            -t docker.io/$DOCKER_USER/booking-frontend:latest .
+                            echo "=== Build finished ==="
                         '''
                     }
                 }
             }
         }
+
 
         stage('Push to Docker Hub') {
             steps {
