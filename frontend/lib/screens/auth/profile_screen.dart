@@ -53,8 +53,8 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       final authService = Provider.of<AuthService>(context, listen: false);
       authService.getProfile().then((_) {
         if (authService.currentUser != null) {
-          _fullNameController.text = authService.currentUser!.fullName;
-          _emailController.text = authService.currentUser!.email;
+          _fullNameController.text = authService.currentUser?.fullName ?? '';
+          _emailController.text = authService.currentUser?.email ?? '';
           _phoneController.text = authService.currentUser!.phoneNumber ?? '';
           _dobController.text = '03/07/2004'; // Static value to match the image; adjust as needed
         }
