@@ -57,9 +57,8 @@ class AuthService extends ChangeNotifier {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = jsonDecode(response.body);
-        print('Login response: $data'); // Debug
+        print('🔹 Login response: $data'); // Debug JSON
 
-        // Đọc token an toàn cả 2 kiểu key
         final accessToken = data['access_token'] ?? data['accessToken'];
         final refreshToken = data['refresh_token'] ?? data['refreshToken'];
 
@@ -79,7 +78,7 @@ class AuthService extends ChangeNotifier {
             'Login failed: ${response.statusCode} - ${response.body}');
       }
     } catch (e) {
-      print(' Error logging in: $e');
+      print('Error logging in: $e');
       errorMessage = e.toString().contains('Login failed')
           ? jsonDecode(e.toString().split(' - ')[1])['message']
           : e.toString();
@@ -89,6 +88,7 @@ class AuthService extends ChangeNotifier {
       notifyListeners();
     }
   }
+
 
 
   bool isAdmin() {

@@ -8,8 +8,8 @@ class LoginResponse {
   factory LoginResponse.fromJson(Map<String, dynamic> json) {
     return LoginResponse(
       user: User.fromJson(json['user']),
-      accessToken: json['accessToken'],
-      refreshToken: json['refresh_token'],
+      accessToken: json['access_token'] ?? json['accessToken'] ?? '',
+      refreshToken: json['refresh_token'] ?? json['refreshToken'] ?? '',
     );
   }
 }
