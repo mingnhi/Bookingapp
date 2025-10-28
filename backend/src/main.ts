@@ -6,7 +6,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   dotenv.config();
   app.enableCors({
-    origin: '*', // Thay bằng domain frontend của bạn
+    origin: 'http://188.166.212.126:8080', // Thay bằng domain frontend của bạn
     methods: 'GET,POST,PUT,DELETE', // Các phương thức HTTP được phép
     allowedHeaders: 'Content-Type, Authorization', // Các header được phép
   });
