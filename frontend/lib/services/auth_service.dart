@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 import '../models/auth.dart';
 
 class AuthService extends ChangeNotifier {
-  final String baseUrl = '188.166.212.126:3000';
+  final String baseUrl = 'http://188.166.212.126:3000';
   final _storage = FlutterSecureStorage();
   bool isLoading = false;
   String? errorMessage;
