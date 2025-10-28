@@ -86,7 +86,7 @@ pipeline {
                     ]) {
                         sh '''
                             echo "Copying docker-compose file to production server..."
-                            scp -o StrictHostKeyChecking=no $DOCKER_COMPOSE_PATH $SERVER_USER@$SERVER_HOST:~/project/docker-compose.yml
+                            scp -o StrictHostKeyChecking=no ./docker-compose.prod.yml $SERVER_USER@$SERVER_HOST:~/project/docker-compose.yml
 
                             echo "Deploying new version on production..."
                             ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_HOST "
