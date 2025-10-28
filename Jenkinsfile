@@ -1,6 +1,13 @@
 pipeline {
     agent any
 
+    //  Thêm các tùy chọn để chống timeout + resume sau restart
+    options {
+        durabilityHint('MAX_SURVIVABILITY')  // Cho phép resume nếu Jenkins restart
+        timeout(time: 90, unit: 'MINUTES')   // Cho phép build chạy tối đa 90 phút
+        disableConcurrentBuilds()            // Ngăn 2 build song song (tránh đè file)
+    }
+
     environment {
         REGISTRY = "docker.io/${DOCKER_USERNAME}"
         IMAGE_NAME = "booking-backend"
@@ -41,7 +48,8 @@ pipeline {
                     withCredentials([usernamePassword(credentialsId: 'dockerhub-cred',
                         usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                         sh '''
-                            echo "Building frontend image..."
+                            echo "Building frontend image (Flutter Web)..."
+                            # Pre-cache Flutter SDK để giảm thời gian build
                             docker build -t docker.io/$DOCKER_USER/booking-frontend:latest .
                         '''
                     }
@@ -54,6 +62,7 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub-cred',
                     usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     sh '''
+                        echo "Pushing images to Docker Hub..."
                         echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
                         docker push docker.io/$DOCKER_USER/booking-backend:latest
                         docker push docker.io/$DOCKER_USER/booking-frontend:latest
@@ -61,6 +70,7 @@ pipeline {
                 }
             }
         }
+
         stage('Deploy to Production Server') {
             steps {
                 sshagent (credentials: ['server-ssh-key']) {
@@ -71,10 +81,10 @@ pipeline {
                         file(credentialsId: 'docker-compose-file', variable: 'DOCKER_COMPOSE_PATH')
                     ]) {
                         sh '''
-                            echo "Copying docker-compose file to server..."
+                            echo "Copying docker-compose file to production server..."
                             scp -o StrictHostKeyChecking=no $DOCKER_COMPOSE_PATH $SERVER_USER@$SERVER_HOST:~/project/docker-compose.yml
 
-                            echo "Deploying to production server..."
+                            echo "Deploying new version on production..."
                             ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_HOST "
                                 cd ~/project && \
                                 echo \\"DB_CONNECTION_STRING=$DB_CONN\\" > .env && \
@@ -94,7 +104,7 @@ pipeline {
 
     post {
         success {
-            echo ' CI/CD pipeline completed successfully!'
+            echo 'CI/CD pipeline completed successfully!'
         }
         failure {
             echo ' Build failed. Check logs for details.'
