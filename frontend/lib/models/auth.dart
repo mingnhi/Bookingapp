@@ -6,14 +6,18 @@ class LoginResponse {
   LoginResponse({required this.user, required this.accessToken, required this.refreshToken});
 
   factory LoginResponse.fromJson(Map<String, dynamic> json) {
+    final accessToken = json['access_token'] ?? json['accessToken'];
+    final refreshToken = json['refresh_token'] ?? json['refreshToken'];
+    if (accessToken == null || refreshToken == null) {
+      print(' Missing token(s) in response: $json');
+    }
     return LoginResponse(
       user: User.fromJson(json['user']),
-      accessToken: json['access_token'] ?? json['accessToken'] ?? '',
-      refreshToken: json['refresh_token'] ?? json['refreshToken'] ?? '',
+      accessToken: accessToken ?? '',
+      refreshToken: refreshToken ?? '',
     );
   }
 }
-
 class User {
   final String id;
   final String fullName;
